@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firma Digital de Declaración Jurada de Salud</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fa-solid fa-file-signature"></i>
+                <h1>Firma Digital de Declaración Jurada de Salud</h1>
+            </div>
+            <button id="themeToggle" class="icon-btn" aria-label="Cambiar tema">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Tarjeta para subir nueva auditoría -->
+        <section class="card upload-section">
+            <h2><i class="fa-solid fa-cloud-arrow-up"></i> Nueva Auditoría para Firmar</h2>
+            <p class="subtitle">Subí el PDF completado para generar el link de firma.</p>
+            
+            <form id="uploadForm" class="upload-form">
+
+                <div class="form-group file-upload-wrapper">
+                    <input type="file" id="pdfFile" accept="application/pdf" class="file-input" required>
+                    <div class="file-upload-design">
+                        <i class="fa-regular fa-file-pdf"></i>
+                        <span id="fileNameDisplay">Hacé clic para seleccionar el PDF</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btnUpload" disabled>
+                    <i class="fa-solid fa-link"></i> Generar Link Único
+                </button>
+            </form>
+        </section>
+
+        <!-- Lista de auditorías -->
+        <section class="card list-section">
+            <h2><i class="fa-solid fa-list-check"></i> Auditorías Recientes</h2>
+            
+            <div class="table-container">
+                <table class="modern-table" id="auditsTable">
+                    <thead>
+                        <tr>
+                            <th>Archivo PDF</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditsList">
+                        <!-- Las filas se generarán por JavaScript -->
+                        <tr class="empty-state">
+                            <td colspan="3">No hay auditorías registradas todavía.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p class="credits">Diseñado y Desarrollado en su totalidad por <strong>Matías Gómez</strong></p>
+            <div class="contact-info">
+                <a href="https://wa.me/5492612404479" target="_blank" class="contact-item">
+                    <i class="fa-brands fa-whatsapp"></i> +54 9 2612404479
+                </a>
+                <a href="mailto:ftvmati2022@gmail.com" class="contact-item">
+                    <i class="fa-solid fa-envelope"></i> ftvmati2022@gmail.com
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK (Compat Version para uso local sin servidor) -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+
+    <!-- Librería PDF-lib para inyectar firma y modificar el PDF final -->
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+    <!-- Cargamos el script sin type="module" para que funcione localmente con el diseño -->
+    <script src="app.js" defer></script>
+</body>
+</html>
