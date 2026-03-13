@@ -29,8 +29,8 @@
             <p class="subtitle">Por favor, lea el documento y firme al pie usando su dedo o mouse.</p>
             
             <div id="pdfContainer" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 2rem; height: 60vh;">
-                <!-- El PDF se cargará aquí -->
-                <iframe id="pdfViewer" width="100%" height="100%" style="border: none;"></iframe>
+                <!-- El PDF se renderizará en canvas aquí adentro para compatibilidad móvil -->
+                <div id="pdfViewer" style="width: 100%; height: 100%; overflow-y: auto; background-color: #e2e8f0; padding: 1rem; text-align: center;"></div>
             </div>
 
             <h3 style="margin-bottom: 1rem; text-align: left;"><i class="fa-solid fa-pen-to-square"></i> Complete sus datos y firme:</h3>
@@ -84,6 +84,9 @@
     
     <!-- Signature Pad SDK -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    
+    <!-- PDF.js para renderizar PDF en móviles sin que salte el cartel de descargar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
     <script src="firmar.js" defer></script>
 </body>

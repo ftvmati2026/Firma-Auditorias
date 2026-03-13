@@ -43,6 +43,10 @@ const signaturePad = new SignaturePad(canvas, {
     backgroundColor: "rgb(255, 255, 255)"
 });
 
+// Configurar PDF.js y la variable para DNIs
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+let dniDetectadosEnPDF = [];
+
 if (!docId) {
     loadingMessage.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-3x" style="color: var(--danger-color);"></i><p style="margin-top:1rem; color:var(--text-primary);">Error: Documento no encontrado. Link inválido.</p>';
 } else {
@@ -55,11 +59,8 @@ if (!docId) {
                 successSection.style.display = 'block';
                 successSection.innerHTML = '<i class="fa-solid fa-circle-check" style="font-size: 4rem; color: var(--success-color); margin-bottom: 1rem;"></i><h2>Este documento ya fue firmado</h2><p class="subtitle">No es necesario volver a firmarlo.</p>';
             } else {
-                // Si está pendiente, cargar el PDF y mostrar para firmar
-                pdfViewer.src = data.pdfBase64;
-                loadingMessage.style.display = 'none';
-                documentSection.style.display = 'block';
-                resizeCanvas(); // re-ajustar canvas ahora que es visible
+                // Si está pendiente, renderizar en canvas (para móviles)
+                renderizarPDFenMovil(data.pdfBase64);
             }
         } else {
             loadingMessage.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-3x" style="color: var(--danger-color);"></i><p style="margin-top:1rem; color:var(--text-primary);">Error: Documento no encontrado o fue eliminado.</p>';
@@ -67,6 +68,61 @@ if (!docId) {
     }).catch((error) => {
         loadingMessage.innerHTML = `<i class="fa-solid fa-triangle-exclamation fa-3x" style="color: var(--danger-color);"></i><p style="margin-top:1rem; color:var(--text-primary);">Error de conexión: ${error.message}</p>`;
     });
+}
+
+// ---- Función Mágica para Celulares y Validación 2 en 1 ----
+async function renderizarPDFenMovil(base64Data) {
+    try {
+        const base64Mudo = base64Data.split(',')[1];
+        const pdfDataString = atob(base64Mudo);
+        const uint8Array = new Uint8Array(pdfDataString.length);
+        for (let i = 0; i < pdfDataString.length; i++) {
+            uint8Array[i] = pdfDataString.charCodeAt(i);
+        }
+        
+        const loadingTask = pdfjsLib.getDocument({data: uint8Array});
+        const pdf = await loadingTask.promise;
+        const container = document.getElementById('pdfViewer');
+        container.innerHTML = '';
+        dniDetectadosEnPDF = []; 
+        
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({scale: 1.5}); // Alta calidad sin pesar en movil
+            
+            const canvasObj = document.createElement('canvas');
+            const ctx = canvasObj.getContext('2d');
+            canvasObj.height = viewport.height;
+            canvasObj.width = viewport.width;
+            canvasObj.style.width = '100%';
+            canvasObj.style.maxWidth = viewport.width + 'px';
+            canvasObj.style.marginBottom = '10px';
+            canvasObj.style.boxShadow = 'var(--shadow-md)';
+            
+            container.appendChild(canvasObj);
+            await page.render({canvasContext: ctx, viewport: viewport}).promise;
+
+            // Extraer texto para la validación de DNI solicitada
+            const textContent = await page.getTextContent();
+            const textoDeLaHoja = textContent.items.map(item => item.str).join(' ');
+            
+            const textoSinPuntos = textoDeLaHoja.replace(/\./g, ''); // si un dni es 31.812.202
+            const matches = textoSinPuntos.match(/\b\d{7,8}\b/g);   // buscar numero de 7 u 8 digitos
+            if (matches) {
+                matches.forEach(m => {
+                    if(!dniDetectadosEnPDF.includes(m)) dniDetectadosEnPDF.push(m);
+                });
+            }
+        }
+        
+        loadingMessage.style.display = 'none';
+        documentSection.style.display = 'block';
+        resizeCanvas();
+
+    } catch (error) {
+        console.error("Error renderizando PDF:", error);
+        loadingMessage.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-3x" style="color: var(--danger-color);"></i><p style="margin-top:1rem; color:var(--text-primary);">Error al abrir el documento.</p>';
+    }
 }
 
 // Lógica de botones de firma
@@ -97,11 +153,22 @@ btnDone.addEventListener('click', () => {
         afiliadoNombre.focus();
         return;
     }
-    if (afiliadoDNI.value.trim() === '') {
+    // Lógica para validar el número de DNI contra lo extraído
+    const valorDniLimpio = afiliadoDNI.value.trim().replace(/\./g, '');
+    if (valorDniLimpio === '') {
         alert("Por favor, ingrese su DNI.");
         afiliadoDNI.focus();
         return;
     }
+
+    if (dniDetectadosEnPDF.length > 0) {
+        if (!dniDetectadosEnPDF.includes(valorDniLimpio)) {
+            alert(`SISTEMA DE SEGURIDAD:\n\nEl DNI ingresado (${valorDniLimpio}) no coincide con ninguno de los registrados en el documento en pantalla.\n\nPor favor, revise estar colocando bien sus datos o los de la persona a cargo detallada en el documento.`);
+            afiliadoDNI.focus();
+            return;
+        }
+    }
+
     if (signaturePad.isEmpty()) {
         alert("Por favor, dibuje su firma en el recuadro antes de presionar HECHO.");
         return;
