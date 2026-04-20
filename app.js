@@ -182,9 +182,24 @@ if (auditsList) {
         });
     }, (error) => {
         console.error("Error obteniendo los registros de la base de datos:", error);
+        let mensajeError = "Error al conectar con la base de datos Firebase.";
+        
+        if (error.code === 'permission-denied') {
+            mensajeError = "Error: Permiso denegado. Verificá las 'Rules' de Firestore en tu consola de Firebase (deben estar en modo de prueba o públicas).";
+        } else if (error.code === 'failed-precondition') {
+            mensajeError = "Error: Falta un índice en Firestore. Mirá la consola del navegador (F12) para encontrar el link de creación automática.";
+        } else {
+            mensajeError = `Error: ${error.message}`;
+        }
+
         auditsList.innerHTML = `
             <tr>
-                <td colspan="3" style="color: var(--danger-color); text-align: center;">Error al conectar con la base de datos Firebase.</td>
+                <td colspan="3">
+                    <div class="error-state">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <div class="error-message-text">${mensajeError}</div>
+                    </div>
+                </td>
             </tr>
         `;
     });

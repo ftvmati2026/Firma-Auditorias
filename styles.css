@@ -246,7 +246,41 @@ header {
 .empty-state {
     text-align: center;
     color: var(--text-secondary);
-    padding: 2rem;
+    padding: 3rem 2rem;
+}
+
+.error-state {
+    text-align: center;
+    color: var(--danger-color);
+    padding: 2.5rem 1.5rem;
+    animation: fadeIn 0.5s ease-out, pulse 2s infinite;
+    background: rgba(239, 68, 68, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.error-state i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.error-message-text {
+    font-weight: 500;
+    max-width: 400px;
+    margin: 0.5rem auto;
+    line-height: 1.4;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
 }
 
 .badge {
