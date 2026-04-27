@@ -300,6 +300,37 @@ header {
     color: var(--success-color);
 }
 
+/* Nuevos estilos para información de pendientes */
+.counter-badge {
+    background-color: var(--warning-color);
+    color: white;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.status-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.status-date, .status-age {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.status-age {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
 /* Footer (Matías Gómez) */
 footer {
     background-color: var(--surface-color);

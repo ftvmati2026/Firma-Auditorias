@@ -124,8 +124,11 @@ const auditsList = document.getElementById('auditsList');
 
 if (auditsList) {
     // Escuchar cambios permanentemente en Firestore, ordenados del más nuevo al más viejo
+    const pendingCounter = document.getElementById('pendingCounter');
+    
     db.collection('auditorias').orderBy('fechaCreacion', 'desc').onSnapshot((snapshot) => {
         auditsList.innerHTML = '';
+        let pendingCount = 0;
         
         if (snapshot.empty) {
             auditsList.innerHTML = `
@@ -146,7 +149,33 @@ if (auditsList) {
             
             // Estilos del estado (Pendiente en Naranja, Firmado en Verde)
             const badgeClass = esFirmado ? 'badge-signed' : 'badge-pending';
-            const estadoHtml = `<span class="badge ${badgeClass}">${data.estado}</span>`;
+            let estadoHtml = `<span class="badge ${badgeClass}">${data.estado}</span>`;
+
+            // Si está pendiente, agregar info de fecha y días
+            if (!esFirmado) {
+                pendingCount++;
+                let infoExtra = '';
+                if (data.fechaCreacion) {
+                    const fecha = data.fechaCreacion.toDate();
+                    const hoy = new Date();
+                    const diffTime = Math.abs(hoy - fecha);
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                    const fechaLegible = fecha.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const diasTexto = diffDays === 0 ? 'Hoy' : `Hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+
+                    infoExtra = `
+                        <span class="status-date"><i class="fa-regular fa-calendar"></i> ${fechaLegible}</span>
+                        <span class="status-age"><i class="fa-regular fa-clock"></i> ${diasTexto}</span>
+                    `;
+                }
+                estadoHtml = `
+                    <div class="status-info-container">
+                        <span class="badge ${badgeClass}">${data.estado}</span>
+                        ${infoExtra}
+                    </div>
+                `;
+            }
             
             // Botones de acción dependiendo del estado de la auditoria
             let botonesAccion = '';
@@ -180,6 +209,16 @@ if (auditsList) {
             `;
             auditsList.appendChild(tr);
         });
+
+        // Actualizar el contador de pendientes
+        if (pendingCounter) {
+            if (pendingCount > 0) {
+                pendingCounter.textContent = pendingCount;
+                pendingCounter.style.display = 'inline-block';
+            } else {
+                pendingCounter.style.display = 'none';
+            }
+        }
     }, (error) => {
         console.error("Error obteniendo los registros de la base de datos:", error);
         let mensajeError = "Error al conectar con la base de datos Firebase.";
